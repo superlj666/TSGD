@@ -142,14 +142,3 @@ format and a loading snippet.
   year      = {2026}
 }
 ```
-
-## 📄 License
-
-MIT — see `LICENSE`. Datasets retain their original licenses (MATH:
-MIT; AIME: public competition).
-
-## 🙏 Acknowledgements
-
-This work is supported in part by the National Natural Science Foundation of
-China (No. 62576041, 62106257, 62437001) and by the Fundamental Research
-Funds for the Central Universities (No. 2253500001, No. 2251200169).
