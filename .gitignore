@@ -1,0 +1,84 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ===== Virtual environments =====
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ===== IDEs / editors =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+*.icloud
+
+# ===== Secrets =====
+.env
+src/.env
+*.env.local
+.env.production
+
+# ===== Experiment outputs (large / per-run) =====
+logs/
+runs/
+outputs/
+experiments/*/runs/
+experiments/*/logs/
+wandb/
+mlruns/
+*.log
+
+# ===== Dataset caches =====
+data/MATH/
+data/AIME/
+data/*.arrow
+data/**/*.arrow
+math_cache/
+**/__pycache__/
+*.npz
+
+# ===== Misc =====
+*.bak
+.~*

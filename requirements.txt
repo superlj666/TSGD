@@ -1,0 +1,36 @@
+# Core dependencies
+openai
+datasets
+numpy
+scikit-learn
+tqdm
+python-dotenv
+httpx
+pydantic
+regex
+# Math processing
+sympy
+latex2sympy2
+PyYAML
+math_verify
+
+# LangChain ecosystem
+langchain
+langchain-openai
+langchain-community
+langchain-core
+
+# Vector store & Retrieval
+faiss-cpu
+
+# Phoenix tracing & OpenTelemetry
+openinference-instrumentation-langchain
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+arize-phoenix
+
+# Analysis & Visualization
+matplotlib
+pandas
+ipykernel

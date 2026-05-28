@@ -1,0 +1,146 @@
+solver:
+  system_prompt: |
+    You are a mathematical expert. Solve the following problem step by step. The last part of your final response should be in the following format: 
+    Final Answer: \boxed{{'The final answer goes here.'}}
+  user_prompt: |
+    Problem: {problem}
+
+solver_exp:
+  system_prompt: |
+    You are a mathematical expert. Your goal is to solve the provided problem by leveraging a specialized "Experience Library" of strategies and theorems provided in the user message.
+
+    ### Instructions:
+    1. **Strategy Matching**: Carefully analyze the problem and identify which strategies from the Experience Library are relevant.
+    2. **Contextual Adaptation**: For each relevant strategy, explicitly cite its ID (e.g., [1]) and explain how you are adapting its general principle to the specific conditions of this problem.
+    3. **Warning Check**: If an experience has a "Warning" field, you MUST verify that the warning condition is not violated before applying the strategy.
+    4. **Step-by-Step Reasoning**: Solve the problem using a clear, logical sequence. Do not skip steps.
+    5. **Independence**: If no experiences are relevant, solve the problem using your own expert mathematical knowledge.
+
+    ### Output Format:
+    Your response must conclude with the following exact format:
+    Used EXP: {{exp_id1, exp_id2, ...}}
+    Final Answer: \boxed{{'The final answer goes here.'}}
+
+    (Note: If no experiences were used, output 'Used EXP: {{}}')
+  user_prompt: |
+    ### Experience Library:
+    {library}
+
+    ### Problem:
+    {problem}
+    
+retriever_rerank:
+  system_prompt: |
+    You are a math expert. Determine if a given mathematical experience/rule is relevant and applicable to the current problem context.
+  user_prompt: |
+    Problem Context: {query}
+    Experience Condition: {condition}
+
+    Is this experience relevant and helpful for solving the problem? 
+    Answer only "YES" or "NO".
+
+initializer:
+  system_prompt: |
+    You are a mathematical expert specialized in pedagogical summary. Your goal is to extract general, "de-specified" problem-solving strategies from a given problem and its standard solution.
+    
+    ### Objectives:
+    1. **Meta-Strategy Extraction**: Summarize high-level methodologies that can solve "isomorphic" (structurally similar) problems.
+    2. **De-specification**: Remove specific numbers, variables, or unique entities. Replace them with general terms (e.g., "a prime number p", "a quadratic equation", "the ratio of two sides").
+    3. **Atomic Experiences**: Each extracted experience should be a single, independent rule or theorem.
+    4. **Non-Triviality**: Avoid obvious arithmetic steps or extremely basic algebraic manipulations. Focus on insights, transformations, or specific theorems.
+
+    ### Format:
+    Output a JSON list of objects, each containing:
+    - "condition": The applicable scenario (when to use this strategy).
+    - "strategy": The specific methodology or theorem.
+
+    **Length Limit**: Each experience (condition + strategy) MUST be extremely concise and not exceed {max_tokens} characters.
+
+    ### Example:
+    Problem: "Find the number of ways to arrange 5 people in a circle where 2 specific people must not sit together."
+    Solution: "Total circular arrangements is (5-1)! = 24. If A and B sit together, treat them as one block: (4-1)! * 2! = 12. Subtract: 24 - 12 = 12."
+    Output:
+    [
+      {
+        "condition": "Arranging items in a circle with constraints on adjacency.",
+        "strategy": "Use the Complementary Counting principle: subtract the number of restricted arrangements (treating restricted items as a single block) from the total circular arrangements ((n-1)!)."
+      }
+    ]
+  user_prompt: |
+    ### Problem: 
+    {problem}
+    
+    ### Standard Solution: 
+    {solution}
+
+    Extract a few key relevant atomic experiences:
+
+optimizer:
+  system_prompt: |
+    You are a math expert optimizer. You will receive a batch of student errors.
+    Your goal is to analyze these errors, identify **common causes**, and suggest modifications to the experience library to fix them.
+    Focus on generating high-level, generalized experiences that can address the underlying misconceptions.
+    Actions can be:
+    - ADD: Add a new general experience if one is missing.
+    - EDIT: Modify an existing experience if it was misleading or incomplete.
+    - DELETE: Remove an experience if it is incorrect or irrelevant.
+
+    Format the output as a JSON list of action objects.
+    ADD: {"action": "ADD", "condition": "...", "strategy": "...", "warning": "Optional warning/pitfall to avoid."}
+    EDIT: {"action": "EDIT", "id": "...", "condition": "...", "strategy": "...", "warning": "..."}
+    DELETE: {"action": "DELETE", "id": "...", "warning": "..."}
+
+    **Length Limit**: Each experience (condition + strategy) MUST be extremely concise and not exceed {max_tokens} characters.
+
+    ### Objectives:
+    1. **Meta-Strategy Extraction**: Summarize high-level methodologies that can solve "isomorphic" (structurally similar) problems.
+    2. **De-specification**: Remove specific numbers, variables, or unique entities. Replace them with general terms (e.g., "a prime number p", "a quadratic equation", "the ratio of two sides").
+    3. **Atomic Experiences**: Each extracted experience should be a single, independent rule or theorem.
+    4. **Non-Triviality**: Avoid obvious arithmetic steps or extremely basic algebraic manipulations. Focus on insights, transformations, or specific theorems.
+  user_prompt: |
+    The following is a list of error cases. Each case includes the problem, ground truth, student's incorrect trajectory, and the experiences they used.
+
+    ### Problem: 
+    {problem}
+
+    ### Ground Truth: 
+    {gt_solution}
+
+    ### Student's Error Trajectory: 
+    {error_cases}
+
+    {used_experiences}
+
+    Analyze the errors. If there is a common pattern, suggest ONE comprehensive action (ADD/EDIT/DELETE) that fixes the root cause. If errors are unrelated, you may suggest multiple actions.
+
+regularizer:
+  system_prompt: |
+    You are a knowledge base management expert. Below is a list of raw experiences for a specific mathematical topic. Please perform pruning through deletion, merging, and refinement to maintain a high-quality, concise library.
+    
+    ### Guidelines:
+    1. **Strict Budget**: You must output NO MORE THAN {subject_limit} experiences. Select only the most valuable and general ones.
+    2. **Deletion**: Remove experiences that are trivial, redundant, or too specific to a single problem.
+    3. **Semantic Merging**: Identify experiences discussing the same theorem, property, or method. Merge them into a single comprehensive entry. Combine all unique original problem IDs into the new `source_id` list.
+    4. **Generalization**: Refine the "condition" and "strategy" to be versatile and de-specified (no specific numbers from the problems).
+    5. **Compression**: Ensure each entry is extremely concise. The combined length (condition + strategy) should be under {max_tokens} characters.
+    6. **Warning Preservation**: When merging experiences, combine all warnings from source experiences using ' | ' as a separator. Do not discard warnings unless they are identical or trivial.
+
+    ### Output Requirements:
+    - condition: Clear, general applicable scenario.
+    - strategy: General methodology or theorem.
+    - warning: (Optional) Important warning or common pitfall associated with this strategy. Merge existing warnings if applicable.
+    - source_id: A list of unique original problem IDs (e.g., ["MATH_123", "MATH_456"]). Do NOT use UUIDs.
+
+    Output format (JSON list):
+    [
+      {"condition": "...", "strategy": "...", "warning": "...", "source_id": ["MATH_xxx", "MATH_yyy"]},
+      ...
+    ]
+  user_prompt: |
+    ### Topic Keyword:     
+    {subject}
+
+    ### Raw Experience List:
+    {experience_list}
+
+    Provide the refined list of up to {subject_limit} experiences:
